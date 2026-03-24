@@ -7,8 +7,6 @@ let pop = 10;
 let days = 1;
 
 // Metrics
-let baseWaterConsumption = 2; // per person per day
-let baseFoodConsumption = 1;  // per person per day
 let huntDuration = 8;
 
 // Time & Loop
@@ -323,16 +321,18 @@ function updateSim(dt) {
     }
 
     // 2. Resource Drain
-    // Consumo: a cada 10 pessoas -> 1 água a cada 2s (= 0.5 por seg) e 1 comida a cada 4s (= 0.25 por seg)
+    // Regra: a cada 10 pessoas -> 1 água a cada 2s (= 0.5 por seg) e 1 comida a cada 4s (= 0.25 por seg)
     let waterDrainPerSec = (pop / 10) * 0.5;
     if (weatherState === 'heat') waterDrainPerSec *= 1.5;
     if (isRationing) waterDrainPerSec *= 0.5;
 
     let foodDrainPerSec = (pop / 10) * 0.25;
+    let foodGainPerSec = (pop * 0.4) / DAY_DURATION; 
 
-    // Apply drain via dt
+    // Apply drain/gain via dt
     water -= waterDrainPerSec * dt;
     food -= foodDrainPerSec * dt;
+    food += foodGainPerSec * dt;
     
     if (weatherState === 'rain') {
         let rainGain = 20 / 5; // +20 spread over 5s
