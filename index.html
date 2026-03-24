@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Last Drop</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&family=Oswald:wght@500&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div id="game-container">
+        <!-- HUD -->
+        <header id="hud">
+            <div class="stat-box water-box">
+                <span class="icon">💧</span>
+                <div class="bar-container tooltip" data-tooltip="Água: essencial para beber e pesquisar. Sem água, a vila morre.">
+                    <div id="water-bar" class="bar water-fill"></div>
+                </div>
+                <span id="water-text" class="stat-text">100/100</span>
+            </div>
+            
+            <div class="stat-box food-box">
+                <span class="icon">🍎</span>
+                <div class="bar-container tooltip" data-tooltip="Comida: energia para cavar e sobreviver.">
+                    <div id="food-bar" class="bar food-fill"></div>
+                </div>
+                <span id="food-text" class="stat-text">100/100</span>
+            </div>
+            
+            <div class="stat-box pop-box tooltip" data-tooltip="População: consome água e comida. Mão de obra.">
+                <span class="icon">👥</span>
+                <span id="pop-text" class="stat-text">10</span>
+            </div>
+
+            <div class="stat-box days-box">
+                <span>DIA: </span>
+                <span id="days-text">1</span>
+            </div>
+        </header>
+
+        <main id="main-area">
+            <!-- Graphics -->
+            <div id="canvas-container">
+                <canvas id="gameCanvas" width="600" height="540"></canvas>
+                <div id="weather-overlay"></div>
+            </div>
+
+            <!-- Controls and Logs -->
+            <aside id="dashboard">
+                <div class="actions-panel">
+                    <h2>Ações</h2>
+                    <button id="btn-next-day" class="action-btn primary" title="Avançar o tempo. A população vai consumir Água e Comida.">Avançar Dia</button>
+                    <button id="btn-ration" class="action-btn warning" title="Reduz consumo de água pela metade amanhã, mas pode causar mortes ou fugas (20% de chance).">Racionar Água</button>
+                    <button id="btn-dig" class="action-btn info" title="Custa 15 de Comida. Pode encontrar lençol freático (+30 Água) ou dar em nada.">Cavar Poço (15 🍎)</button>
+                    <button id="btn-research" class="action-btn purple" title="Custa 20 de Água. Reduz o consumo diário de água em 10% permanentemente.">Pesquisar Reúso (20 💧)</button>
+                </div>
+                
+                <div class="log-panel">
+                    <h2>Registro de Eventos</h2>
+                    <ul id="event-log">
+                    </ul>
+                </div>
+            </aside>
+        </main>
+        
+        <!-- Modal Game Over -->
+        <div id="game-over-modal" class="hidden">
+            <div class="modal-content">
+                <h1 id="game-over-title">Fim de Jogo</h1>
+                <p id="game-over-desc">A seca venceu.</p>
+                <p>Dias Sobrevividos: <span id="final-days"></span></p>
+                <button id="btn-restart" class="action-btn primary" style="margin-top: 20px;">Tentar Novamente</button>
+            </div>
+        </div>
+    </div>
+    
+    <script src="script.js"></script>
+</body>
+</html>
