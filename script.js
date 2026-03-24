@@ -20,7 +20,8 @@ let rationingTimer = 0;
 
 let cooldowns = {
     dig: 0,
-    research: 0
+    research: 0,
+    hunt: 0
 };
 
 // DOM Elements
@@ -35,6 +36,7 @@ const eventLog = document.getElementById('event-log');
 
 const btnRation = document.getElementById('btn-ration');
 const btnDig = document.getElementById('btn-dig');
+const btnHunt = document.getElementById('btn-hunt');
 const btnResearch = document.getElementById('btn-research');
 
 const gameOverModal = document.getElementById('game-over-modal');
@@ -60,7 +62,7 @@ let weatherTimer = 0;
 function init() {
     water = 100; food = 100; pop = 10; days = 1; techLevel = 0; 
     dayTimer = DAY_DURATION; isRationing = false; rationingTimer = 0;
-    cooldowns = { dig: 0, research: 0 };
+    cooldowns = { dig: 0, research: 0, hunt: 0 };
     
     peopleDots.length = 0;
     for (let i = 0; i < pop; i++) spawnPerson();
@@ -161,6 +163,15 @@ function updateButtons() {
         btnResearch.innerText = `Pesquisar Reúso (20 💧)`;
     }
 
+    // Hunt
+    if (cooldowns.hunt > 0) {
+        btnHunt.disabled = true;
+        btnHunt.innerText = `Caçando... (${Math.ceil(cooldowns.hunt)}s)`;
+    } else {
+        btnHunt.disabled = (food < 3 || water < 5);
+        btnHunt.innerText = `Caçar Expedição 🎯`;
+    }
+
     // Ration
     if (rationingTimer > 0) {
         btnRation.disabled = true;
@@ -210,6 +221,24 @@ btnDig.addEventListener('click', () => {
         worker.targetX = villageRect.x + 20 + Math.random() * (villageRect.w - 40);
         worker.targetY = villageRect.y + 20 + Math.random() * (villageRect.h - 40);
         spawnFloatingText("-15 🍎", '#e67e22', worker.x, worker.y);
+    }
+    updateHUD();
+});
+
+btnHunt.addEventListener('click', () => {
+    if (food < 3 || water < 5 || cooldowns.hunt > 0) return;
+    food -= 3;
+    water -= 5;
+    cooldowns.hunt = 8;
+    
+    let worker = getWorker();
+    if (worker) {
+        worker.state = 'walking_to_hunt';
+        // Go outside the village
+        worker.targetX = Math.random() < 0.5 ? Math.random() * (villageRect.x - 20) : villageRect.x + villageRect.w + 20 + Math.random() * (canvas.width - villageRect.x - villageRect.w - 40);
+        worker.targetY = Math.random() < 0.5 ? Math.random() * (villageRect.y - 20) : villageRect.y + villageRect.h + 20 + Math.random() * (canvas.height - villageRect.y - villageRect.h - 40);
+        
+        spawnFloatingText("-3 🍎 -5 💧", '#e74c3c', worker.x, worker.y);
     }
     updateHUD();
 });
@@ -363,6 +392,30 @@ function updateSim(dt) {
         }
     }
 
+    if (cooldowns.hunt > 0) {
+        cooldowns.hunt -= dt;
+        if (cooldowns.hunt <= 0) {
+            // Hunt finished
+            let w = peopleDots.find(p => p.state === 'hunting');
+            if (w) w.state = 'wandering';
+
+            // 60% chance of success
+            if (Math.random() < 0.6) {
+                let gained = 20 + Math.floor(Math.random()*16);
+                food += gained;
+                let nx = w ? w.x : villageRect.x + villageRect.w/2;
+                let ny = w ? w.y : villageRect.y + villageRect.h/2;
+                spawnFloatingText(`+${gained} 🍎`, '#e67e22', nx, ny);
+                log(`Expedição bem sucedida! Trouxeram +${gained} de Comida.`, 'good-event');
+            } else {
+                let nx = w ? w.x : villageRect.x + villageRect.w/2;
+                let ny = w ? w.y : villageRect.y + villageRect.h/2;
+                spawnFloatingText(`Nada...`, '#e0e0e0', nx, ny);
+                log(`Os caçadores voltaram de mãos vazias.`, 'bad-event');
+            }
+        }
+    }
+
     // 4. Update Agents
     peopleDots.forEach(p => {
         if (p.state === 'wandering') {
@@ -394,6 +447,7 @@ function updateSim(dt) {
             if (dist < 2) {
                 if (p.state === 'walking_to_dig') { p.state = 'digging'; p.timer = 0; }
                 if (p.state === 'walking_to_research') { p.state = 'researching'; p.timer = 0; }
+                if (p.state === 'walking_to_hunt') { p.state = 'hunting'; p.timer = 0; }
             } else {
                 p.x += (dx/dist) * 80 * dt;
                 p.y += (dy/dist) * 80 * dt;
@@ -491,7 +545,7 @@ function drawCanvas(dt) {
         let drawY = p.y;
         
         // Digging animation: little jumps
-        if (p.state === 'digging' || p.state === 'researching') {
+        if (p.state === 'digging' || p.state === 'researching' || p.state === 'hunting') {
             p.timer += dt * 10;
             drawY -= Math.abs(Math.sin(p.timer)) * 4; // Bouncing up and down quickly
             
@@ -509,6 +563,14 @@ function drawCanvas(dt) {
                 ctx.beginPath();
                 ctx.arc(p.x + 4, drawY - 2, 2, 0, Math.PI*2);
                 ctx.fill();
+            } else if (p.state === 'hunting') {
+                // Draw a tiny spear
+                ctx.strokeStyle = '#c0392b';
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                ctx.moveTo(p.x, drawY);
+                ctx.lineTo(p.x + 8, drawY - 8);
+                ctx.stroke();
             }
         }
 

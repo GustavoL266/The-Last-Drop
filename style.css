@@ -190,6 +190,7 @@ body {
 .action-btn.primary { background-color: var(--primary-btn); }
 .action-btn.warning { background-color: var(--warning-btn); }
 .action-btn.info { background-color: var(--info-btn); }
+.action-btn.hunter { background-color: #c0392b; }
 .action-btn.purple { background-color: var(--purple-btn); }
 
 .action-btn:disabled {
