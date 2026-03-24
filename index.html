@@ -13,7 +13,7 @@
         <header id="hud">
             <div class="stat-box water-box">
                 <span class="icon">💧</span>
-                <div class="bar-container tooltip" data-tooltip="Água: essencial para beber e pesquisar. Sem água, a vila morre.">
+                <div class="bar-container tooltip" data-tooltip="Água: essencial para sobreviver. Drena em tempo real.">
                     <div id="water-bar" class="bar water-fill"></div>
                 </div>
                 <span id="water-text" class="stat-text">100/100</span>
@@ -21,20 +21,22 @@
             
             <div class="stat-box food-box">
                 <span class="icon">🍎</span>
-                <div class="bar-container tooltip" data-tooltip="Comida: energia para cavar e sobreviver.">
+                <div class="bar-container tooltip" data-tooltip="Comida: energia. Fome causa morte populacional.">
                     <div id="food-bar" class="bar food-fill"></div>
                 </div>
                 <span id="food-text" class="stat-text">100/100</span>
             </div>
             
-            <div class="stat-box pop-box tooltip" data-tooltip="População: consome água e comida. Mão de obra.">
+            <div class="stat-box pop-box tooltip" data-tooltip="População: Consomem recursos constantemente.">
                 <span class="icon">👥</span>
                 <span id="pop-text" class="stat-text">10</span>
             </div>
 
-            <div class="stat-box days-box">
-                <span>DIA: </span>
-                <span id="days-text">1</span>
+            <div class="stat-box days-box tooltip" data-tooltip="1 Dia = 20 segundos">
+                <span>DIA <span id="days-text">1</span></span>
+                <div class="day-progress-bar">
+                    <div id="day-bar-fill"></div>
+                </div>
             </div>
         </header>
 
@@ -49,10 +51,9 @@
             <aside id="dashboard">
                 <div class="actions-panel">
                     <h2>Ações</h2>
-                    <button id="btn-next-day" class="action-btn primary" title="Avançar o tempo. A população vai consumir Água e Comida.">Avançar Dia</button>
-                    <button id="btn-ration" class="action-btn warning" title="Reduz consumo de água pela metade amanhã, mas pode causar mortes ou fugas (20% de chance).">Racionar Água</button>
-                    <button id="btn-dig" class="action-btn info" title="Custa 15 de Comida. Pode encontrar lençol freático (+30 Água) ou dar em nada.">Cavar Poço (15 🍎)</button>
-                    <button id="btn-research" class="action-btn purple" title="Custa 20 de Água. Reduz o consumo diário de água em 10% permanentemente.">Pesquisar Reúso (20 💧)</button>
+                    <button id="btn-ration" class="action-btn warning" title="Reduz consumo de água por 20 seg, mas pode causar mortes (Racionamento).">Racionar Água</button>
+                    <button id="btn-dig" class="action-btn info" title="Custa 15 🍎. Demora 5s. Chance de achar um poço d'água.">Cavar Poço (15 🍎)</button>
+                    <button id="btn-research" class="action-btn purple" title="Custa 20 💧. Demora 10s. Cria uma Tenda de Pesquisa, reduzindo o consumo futuramente.">Pesquisar Reúso (20 💧)</button>
                 </div>
                 
                 <div class="log-panel">
