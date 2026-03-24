@@ -358,8 +358,13 @@ function updateSim(dt) {
             let w = peopleDots.find(p => p.state === 'digging');
             if (w) w.state = 'wandering';
 
-            if (Math.random() < 0.45) {
-                let gained = 20 + Math.floor(Math.random()*20);
+            let chance = 0.45;
+            if (pop < 5) chance -= 0.20;
+            else if (pop > 15) chance += 0.15;
+
+            if (Math.random() < chance) {
+                let baseGain = 20 + Math.floor(Math.random()*20);
+                let gained = baseGain + Math.floor(pop / 2);
                 water += gained;
                 let nx = w ? w.x : villageRect.x + villageRect.w/2;
                 let ny = w ? w.y : villageRect.y + villageRect.h/2;
@@ -399,9 +404,14 @@ function updateSim(dt) {
             let w = peopleDots.find(p => p.state === 'hunting');
             if (w) w.state = 'wandering';
 
-            // 60% chance of success
-            if (Math.random() < 0.6) {
-                let gained = 20 + Math.floor(Math.random()*16);
+            // Success chance based on population size
+            let chance = 0.60;
+            if (pop < 5) chance -= 0.20;
+            else if (pop > 15) chance += 0.15;
+
+            if (Math.random() < chance) {
+                let baseGain = 20 + Math.floor(Math.random()*16);
+                let gained = baseGain + Math.floor(pop / 2);
                 food += gained;
                 let nx = w ? w.x : villageRect.x + villageRect.w/2;
                 let ny = w ? w.y : villageRect.y + villageRect.h/2;
