@@ -329,12 +329,10 @@ function updateSim(dt) {
     if (isRationing) waterDrainPerSec *= 0.5;
 
     let foodDrainPerSec = (pop / 10) * 0.25;
-    let foodGainPerSec = (pop * 0.4) / DAY_DURATION; 
 
-    // Apply drain/gain via dt
+    // Apply drain via dt
     water -= waterDrainPerSec * dt;
     food -= foodDrainPerSec * dt;
-    food += foodGainPerSec * dt;
     
     if (weatherState === 'rain') {
         let rainGain = 20 / 5; // +20 spread over 5s
