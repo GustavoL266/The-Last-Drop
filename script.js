@@ -16,7 +16,6 @@ let lastTime = 0;
 const DAY_DURATION = 20; // seconds
 let dayTimer = DAY_DURATION;
 let isRationing = false;
-let rationingTimer = 0;
 
 let cooldowns = {
     dig: 0,
@@ -61,7 +60,7 @@ let weatherTimer = 0;
 // Init
 function init() {
     water = 100; food = 100; pop = 10; days = 1; techLevel = 0; 
-    dayTimer = DAY_DURATION; isRationing = false; rationingTimer = 0;
+    dayTimer = DAY_DURATION; isRationing = false;
     cooldowns = { dig: 0, research: 0, hunt: 0 };
     
     peopleDots.length = 0;
@@ -173,9 +172,9 @@ function updateButtons() {
     }
 
     // Ration
-    if (rationingTimer > 0) {
+    if (isRationing) {
         btnRation.disabled = true;
-        btnRation.innerText = `Racionando... (${Math.ceil(rationingTimer)}s)`;
+        btnRation.innerText = `Racionando... (${Math.ceil(dayTimer)}s)`;
     } else {
         btnRation.disabled = false;
         btnRation.innerText = `Racionar Água`;
@@ -191,8 +190,7 @@ function endGame(reason) {
 // User Actions
 btnRation.addEventListener('click', () => {
     isRationing = true;
-    rationingTimer = DAY_DURATION; // Lasts 1 day real-time (20s)
-    log(`Decreto de Racionamento! O estresse popular aumentou.`, 'warn-event');
+    log(`Decreto ativado pro resto do dia! O estresse aumentou.`, 'warn-event');
     
     // Immediate chance of losing someone
     if (Math.random() < 0.20 && pop > 1) {
@@ -287,13 +285,15 @@ function updateSim(dt) {
         days++;
         
         // Growth logic
-        if (water > maxWater * 0.25 && food > maxFood * 0.25 && !isRationing) {
+        if (water > maxWater * 0.35 && food > maxFood * 0.35 && !isRationing) {
             let growth = Math.floor(Math.random() * 2) + 1;
             pop += growth;
             log(`Prosperidade na vila! Atraímos ${growth} novo(s) morador(es).`, 'good-event');
             spawnFloatingText(`+${growth} 👥`, '#ecf0f1', villageRect.x + villageRect.w/2, villageRect.y + 20);
             while(peopleDots.length < pop) spawnPerson();
         }
+
+        isRationing = false; // Reset rationing at the end of the day
 
         // Weather Roll every day start
         weatherState = 'normal';
@@ -353,12 +353,6 @@ function updateSim(dt) {
     }
 
     // 3. Timers & Cooldowns
-    if (rationingTimer > 0) {
-        rationingTimer -= dt;
-        if (rationingTimer <= 0) {
-            isRationing = false;
-        }
-    }
 
     if (cooldowns.dig > 0) {
         cooldowns.dig -= dt;
