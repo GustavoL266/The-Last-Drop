@@ -286,6 +286,15 @@ function updateSim(dt) {
         dayTimer = DAY_DURATION;
         days++;
         
+        // Growth logic
+        if (water > maxWater * 0.25 && food > maxFood * 0.25 && !isRationing) {
+            let growth = Math.floor(Math.random() * 2) + 1;
+            pop += growth;
+            log(`Prosperidade na vila! Atraímos ${growth} novo(s) morador(es).`, 'good-event');
+            spawnFloatingText(`+${growth} 👥`, '#ecf0f1', villageRect.x + villageRect.w/2, villageRect.y + 20);
+            while(peopleDots.length < pop) spawnPerson();
+        }
+
         // Weather Roll every day start
         weatherState = 'normal';
         overlay.style.backgroundColor = 'transparent';
