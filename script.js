@@ -9,7 +9,7 @@ let days = 1;
 // Metrics
 let baseWaterConsumption = 2; // per person per day
 let baseFoodConsumption = 1;  // per person per day
-let techLevel = 0;
+let huntDuration = 8;
 
 // Time & Loop
 let lastTime = 0;
@@ -19,7 +19,7 @@ let isRationing = false;
 
 let cooldowns = {
     dig: 0,
-    research: 0,
+    school: 0,
     hunt: 0
 };
 
@@ -36,7 +36,7 @@ const eventLog = document.getElementById('event-log');
 const btnRation = document.getElementById('btn-ration');
 const btnDig = document.getElementById('btn-dig');
 const btnHunt = document.getElementById('btn-hunt');
-const btnResearch = document.getElementById('btn-research');
+const btnSchool = document.getElementById('btn-school');
 
 const gameOverModal = document.getElementById('game-over-modal');
 const gameTitle = document.getElementById('game-over-title');
@@ -59,9 +59,9 @@ let weatherTimer = 0;
 
 // Init
 function init() {
-    water = 100; food = 100; pop = 10; days = 1; techLevel = 0; 
+    water = 100; food = 100; pop = 10; days = 1; huntDuration = 8; maxWater=100; maxFood=100;
     dayTimer = DAY_DURATION; isRationing = false;
-    cooldowns = { dig: 0, research: 0, hunt: 0 };
+    cooldowns = { dig: 0, school: 0, hunt: 0 };
     
     peopleDots.length = 0;
     for (let i = 0; i < pop; i++) spawnPerson();
@@ -153,13 +153,13 @@ function updateButtons() {
         btnDig.innerText = `Cavar Poço (15 🍎)`;
     }
 
-    // Research
-    if (cooldowns.research > 0) {
-        btnResearch.disabled = true;
-        btnResearch.innerText = `Pesquisando... (${Math.ceil(cooldowns.research)}s)`;
+    // School
+    if (cooldowns.school > 0) {
+        btnSchool.disabled = true;
+        btnSchool.innerText = `Construindo... (${Math.ceil(cooldowns.school)}s)`;
     } else {
-        btnResearch.disabled = (water < 20);
-        btnResearch.innerText = `Pesquisar Reúso (20 💧)`;
+        btnSchool.disabled = (water < 20);
+        btnSchool.innerText = `Construir Escola 🏫`;
     }
 
     // Hunt
@@ -227,7 +227,7 @@ btnHunt.addEventListener('click', () => {
     if (food < 3 || water < 5 || cooldowns.hunt > 0) return;
     food -= 3;
     water -= 5;
-    cooldowns.hunt = 8;
+    cooldowns.hunt = huntDuration;
     
     let worker = getWorker();
     if (worker) {
@@ -241,14 +241,14 @@ btnHunt.addEventListener('click', () => {
     updateHUD();
 });
 
-btnResearch.addEventListener('click', () => {
-    if (water < 20 || cooldowns.research > 0) return;
+btnSchool.addEventListener('click', () => {
+    if (water < 20 || cooldowns.school > 0) return;
     water -= 20;
-    cooldowns.research = 10;
+    cooldowns.school = 10;
 
     let worker = getWorker();
     if (worker) {
-        worker.state = 'walking_to_research';
+        worker.state = 'walking_to_school';
         worker.targetX = villageRect.x + 20 + Math.random() * (villageRect.w - 40);
         worker.targetY = villageRect.y + 20 + Math.random() * (villageRect.h - 40);
         spawnFloatingText("-20 💧", '#3498db', worker.x, worker.y);
@@ -323,7 +323,7 @@ function updateSim(dt) {
     }
 
     // 2. Resource Drain
-    let dailyWater = baseWaterConsumption * pop * Math.pow(0.9, techLevel);
+    let dailyWater = baseWaterConsumption * pop;
     if (weatherState === 'heat') dailyWater *= 1.5;
     if (isRationing) dailyWater *= 0.5;
 
@@ -384,19 +384,22 @@ function updateSim(dt) {
         }
     }
 
-    if (cooldowns.research > 0) {
-        cooldowns.research -= dt;
-        if (cooldowns.research <= 0) {
-            // Research finished
-            let w = peopleDots.find(p => p.state === 'researching');
+    if (cooldowns.school > 0) {
+        cooldowns.school -= dt;
+        if (cooldowns.school <= 0) {
+            // School finished
+            let w = peopleDots.find(p => p.state === 'schooling');
             if (w) w.state = 'wandering';
 
-            techLevel++;
+            huntDuration = Math.max(4, huntDuration - 0.25);
+            maxWater = Math.floor(maxWater * 1.1);
+            maxFood = Math.floor(maxFood * 1.1);
+
             let nx = w ? w.x : villageRect.x + villageRect.w/2;
             let ny = w ? w.y : villageRect.y + villageRect.h/2;
-            buildings.push({ type: 'tent', x: nx, y: ny });
-            spawnFloatingText(`Eficiência +`, '#9b59b6', nx, ny);
-            log(`Nova tenda de pesquisa construída! Eficiência hídrica +10%.`, 'good-event');
+            buildings.push({ type: 'school', x: nx, y: ny });
+            spawnFloatingText(`Limites +10%`, '#9b59b6', nx, ny);
+            log(`Escola construída! Caça mais ágil e armazéns ampliados.`, 'good-event');
         }
     }
 
@@ -459,7 +462,7 @@ function updateSim(dt) {
             let dist = Math.sqrt(dx*dx + dy*dy);
             if (dist < 2) {
                 if (p.state === 'walking_to_dig') { p.state = 'digging'; p.timer = 0; }
-                if (p.state === 'walking_to_research') { p.state = 'researching'; p.timer = 0; }
+                if (p.state === 'walking_to_school') { p.state = 'schooling'; p.timer = 0; }
                 if (p.state === 'walking_to_hunt') { p.state = 'hunting'; p.timer = 0; }
             } else {
                 p.x += (dx/dist) * 80 * dt;
@@ -530,15 +533,18 @@ function drawCanvas(dt) {
             ctx.beginPath();
             ctx.arc(b.x, b.y, (b.type==='main-well'?8:5) * (moisture + 0.1), 0, Math.PI * 2);
             ctx.fill();
-        } else if (b.type === 'tent') {
-            ctx.fillStyle = '#8e44ad'; // Purple tent
+        } else if (b.type === 'school') {
+            ctx.fillStyle = '#8e44ad'; // Purple school
+            ctx.fillRect(b.x - 8, b.y - 8, 16, 16);
+            ctx.fillStyle = '#ecf0f1'; // Roof
             ctx.beginPath();
-            ctx.moveTo(b.x, b.y - 10);
-            ctx.lineTo(b.x - 10, b.y + 10);
-            ctx.lineTo(b.x + 10, b.y + 10);
+            ctx.moveTo(b.x - 10, b.y - 8);
+            ctx.lineTo(b.x, b.y - 15);
+            ctx.lineTo(b.x + 10, b.y - 8);
             ctx.fill();
-            ctx.fillStyle = '#f1c40f'; // Lamp/flag
-            ctx.fillRect(b.x-2, b.y-12, 4, 4);
+            // Flag
+            ctx.fillStyle = '#f1c40f'; 
+            ctx.fillRect(b.x-2, b.y-16, 4, 4);
         }
     });
 
@@ -570,8 +576,8 @@ function drawCanvas(dt) {
                 ctx.moveTo(p.x, drawY);
                 ctx.lineTo(p.x + 6, drawY - 6);
                 ctx.stroke();
-            } else if (p.state === 'researching') {
-                // Draw a tiny flask or book (just a color dot)
+            } else if (p.state === 'schooling') {
+                // Draw a tiny book (just a color dot)
                 ctx.fillStyle = '#f1c40f';
                 ctx.beginPath();
                 ctx.arc(p.x + 4, drawY - 2, 2, 0, Math.PI*2);
