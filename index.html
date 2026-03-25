@@ -1,12 +1,15 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>The Last Drop</title>
     <link rel="stylesheet" href="style.css">
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&family=Oswald:wght@500&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&family=Oswald:wght@500&display=swap"
+        rel="stylesheet">
 </head>
+
 <body>
     <div id="game-container">
         <!-- HUD -->
@@ -18,7 +21,7 @@
                 </div>
                 <span id="water-text" class="stat-text">100/100</span>
             </div>
-            
+
             <div class="stat-box food-box">
                 <span class="icon">🍎</span>
                 <div class="bar-container tooltip" data-tooltip="Comida: energia. Fome causa morte populacional.">
@@ -34,7 +37,7 @@
                 </div>
                 <span id="energy-text" class="stat-text">0/100</span>
             </div>
-            
+
             <div class="stat-box pop-box tooltip" data-tooltip="População: Consomem recursos constantemente.">
                 <span class="icon">👥</span>
                 <span id="pop-text" class="stat-text">10</span>
@@ -62,11 +65,17 @@
                     <h2>Ações</h2>
                     <div class="actions-scroll">
                         <button id="btn-pause" class="action-btn" title="Pausa ou retoma a passagem do tempo.">Pausar Jogo (Esc) ⏸️</button>
-                        <button id="btn-ration" class="action-btn warning" title="Reduz consumo de água por 20 seg, mas pode causar mortes (Racionamento).">Racionar Água</button>
-                        <button id="btn-dig" class="action-btn info" title="Custa 15 🍎. Demora 5s. Chance de achar um poço d'água.">Cavar Poço (15 🍎)</button>
-                        <button id="btn-hunt" class="action-btn hunter" title="Custa 3 🍎 e 5 💧. Chance de presa (20-35 🍎).">Caçar Expedição 🎯</button>
-                        <button id="btn-school" class="action-btn purple" title="Custa 20 💧. Demora 10s. Constrói uma Escola (reduz tempo de caça, aumenta limite de base).">Construir Escola (0) 🏫</button>
-                        
+                        <button id="btn-ration" class="action-btn warning"
+                            title="Reduz consumo de água por 20 seg, mas pode causar mortes (Racionamento).">Racionar
+                            Água</button>
+                        <button id="btn-dig" class="action-btn info"
+                            title="Custa 15 🍎. Demora 5s. Chance de achar um poço d'água.">Cavar Poço (15 🍎)</button>
+                        <button id="btn-hunt" class="action-btn hunter"
+                            title="Custa 3 🍎 e 5 💧. Chance de presa (20-35 🍎).">Caçar Expedição 🎯</button>
+                        <button id="btn-school" class="action-btn purple"
+                            title="Custa 20 💧. Demora 10s. Constrói uma Escola (reduz tempo de caça, aumenta limite de base).">Construir
+                            Escola (0) 🏫</button>
+                            
                         <div id="unlock-msg" class="unlock-message">Compre 10 Escolas para desbloquear esta seção</div>
                         <div id="advanced-actions-container" class="hidden">
                             <button id="btn-solar" class="action-btn solar" title="Custa 50 🍎 e 200 💧. Gera 2 ⚡/s. Max Energia +50.">Painel Solar (0) ☀️</button>
@@ -75,7 +84,7 @@
                         </div>
                     </div>
                 </div>
-                
+
                 <div class="log-panel">
                     <h2>Registro de Eventos</h2>
                     <ul id="event-log">
@@ -83,7 +92,7 @@
                 </div>
             </aside>
         </main>
-        
+
         <!-- Modal Game Over -->
         <div id="game-over-modal" class="hidden">
             <div class="modal-content">
@@ -94,7 +103,8 @@
             </div>
         </div>
     </div>
-    
+
     <script src="script.js"></script>
 </body>
+
 </html>
