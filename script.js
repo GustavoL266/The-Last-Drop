@@ -5,6 +5,11 @@ let food = 100;
 let maxFood = 100;
 let pop = 10;
 let days = 1;
+let energy = 0;
+let maxEnergy = 100;
+let solarPanels = 0;
+let drills = 0;
+let schoolsBuilt = 0;
 
 // Metrics
 let baseWaterConsumption = 2; // per person per day
@@ -33,12 +38,20 @@ const popText = document.getElementById('pop-text');
 const daysText = document.getElementById('days-text');
 const dayBarFill = document.getElementById('day-bar-fill');
 const eventLog = document.getElementById('event-log');
+const energySection = document.getElementById('energy-section');
+const energyBar = document.getElementById('energy-bar');
+const energyText = document.getElementById('energy-text');
 
 const btnPause = document.getElementById('btn-pause');
 const btnRation = document.getElementById('btn-ration');
 const btnDig = document.getElementById('btn-dig');
 const btnHunt = document.getElementById('btn-hunt');
 const btnSchool = document.getElementById('btn-school');
+const btnSolar = document.getElementById('btn-solar');
+const btnDrill = document.getElementById('btn-drill');
+const advActionsCtr = document.getElementById('advanced-actions-container');
+const unlockMsg = document.getElementById('unlock-msg');
+const unlockDrillMsg = document.getElementById('unlock-drill-msg');
 
 const gameOverModal = document.getElementById('game-over-modal');
 const gameTitle = document.getElementById('game-over-title');
@@ -49,6 +62,7 @@ const btnRestart = document.getElementById('btn-restart');
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
 const overlay = document.getElementById('weather-overlay');
+const pauseOverlay = document.getElementById('pause-overlay');
 
 // Graphics Entities
 const villageRect = { x: 200, y: 200, w: 200, h: 140 };
@@ -63,7 +77,8 @@ let weatherTimer = 0;
 function init() {
     water = 100; maxWater = 100; food = 100; maxFood = 100; pop = 10; days = 1; huntDuration = 8; 
     dayTimer = DAY_DURATION; isRationing = false; isPaused = false;
-    if (btnPause) btnPause.innerText = "Pausar Jogo ⏸️";
+    energy = 0; maxEnergy = 100; solarPanels = 0; drills = 0; schoolsBuilt = 0;
+    if (btnPause) btnPause.innerText = "Pausar Jogo (Esc) ⏸️";
     cooldowns = { dig: 0, school: 0, hunt: 0 };
     
     peopleDots.length = 0;
@@ -75,6 +90,7 @@ function init() {
     
     eventLog.innerHTML = `<li class="neutral-event">Dia 1: O tempo corre sem parar... Os recursos escorrem pelos dedos.</li>`;
     gameOverModal.classList.add('hidden');
+    if (pauseOverlay) pauseOverlay.classList.add('hidden');
     weatherState = 'normal';
     overlay.style.backgroundColor = 'transparent';
     
@@ -140,6 +156,28 @@ function updateHUD() {
     daysText.innerText = days;
     dayBarFill.style.width = `${((DAY_DURATION - dayTimer) / DAY_DURATION) * 100}%`;
 
+    energy = Math.max(0, Math.min(energy, maxEnergy));
+    if (energyBar) energyBar.style.width = `${(energy / maxEnergy) * 100}%`;
+    if (energyText) energyText.innerText = `${Math.floor(energy)}/${maxEnergy}`;
+
+    if (schoolsBuilt >= 10) {
+        if (advActionsCtr) advActionsCtr.classList.remove('hidden');
+        if (unlockMsg) unlockMsg.classList.add('hidden');
+    } else {
+        if (advActionsCtr) advActionsCtr.classList.add('hidden');
+        if (unlockMsg) unlockMsg.classList.remove('hidden');
+    }
+
+    if (solarPanels >= 1) {
+        if (energySection) energySection.classList.remove('hidden');
+        if (btnDrill) btnDrill.classList.remove('hidden');
+        if (unlockDrillMsg) unlockDrillMsg.classList.add('hidden');
+    } else {
+        if (energySection) energySection.classList.add('hidden');
+        if (btnDrill) btnDrill.classList.add('hidden');
+        if (unlockDrillMsg) unlockDrillMsg.classList.remove('hidden');
+    }
+
     updateButtons();
 
     if (water <= 0) endGame("As reservas secaram totalmente. Fim da linha.");
@@ -164,6 +202,9 @@ function updateButtons() {
         btnSchool.disabled = (water < 20);
         btnSchool.innerText = `Construir Escola 🏫`;
     }
+
+    if (btnSolar) btnSolar.disabled = (food < 50 || water < 200);
+    if (btnDrill) btnDrill.disabled = (food < 50 || water < 50);
 
     // Hunt
     if (cooldowns.hunt > 0) {
@@ -195,14 +236,23 @@ if (btnPause) {
     btnPause.addEventListener('click', () => {
         isPaused = !isPaused;
         if (isPaused) {
-            btnPause.innerText = "Retomar Jogo ▶️";
+            btnPause.innerText = "Retomar Jogo (Esc) ▶️";
             log("Jogo pausado.", "neutral-event");
+            if (pauseOverlay) pauseOverlay.classList.remove('hidden');
         } else {
-            btnPause.innerText = "Pausar Jogo ⏸️";
+            btnPause.innerText = "Pausar Jogo (Esc) ⏸️";
             log("Jogo retomado.", "neutral-event");
+            if (pauseOverlay) pauseOverlay.classList.add('hidden');
         }
     });
 }
+
+document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+        if (btnPause && !gameOverModal.classList.contains('hidden')) return; // ignore if game over
+        if (btnPause) btnPause.click();
+    }
+});
 
 btnRation.addEventListener('click', () => {
     isRationing = true;
@@ -272,6 +322,31 @@ btnSchool.addEventListener('click', () => {
     updateHUD();
 });
 
+if (btnSolar) {
+    btnSolar.addEventListener('click', () => {
+        if (food < 50 || water < 200) return;
+        food -= 50; water -= 200;
+        solarPanels++;
+        maxEnergy += 50;
+        buildings.push({ type: 'solar', x: villageRect.x + 10 + Math.random()*180, y: villageRect.y + 10 + Math.random()*120 });
+        spawnFloatingText("-50 🍎 -200 💧", '#f1c40f', villageRect.x + villageRect.w/2, villageRect.y + villageRect.h/2);
+        log("Um Painel Solar foi instalado. Limite de Energia +50 e geração local ativa.", "good-event");
+        updateHUD();
+    });
+}
+
+if (btnDrill) {
+    btnDrill.addEventListener('click', () => {
+        if (food < 50 || water < 50) return;
+        food -= 50; water -= 50;
+        drills++;
+        buildings.push({ type: 'drill', x: villageRect.x + 10 + Math.random()*180, y: villageRect.y + 10 + Math.random()*120 });
+        spawnFloatingText("-50 🍎 -50 💧", '#7f8c8d', villageRect.x + villageRect.w/2, villageRect.y + villageRect.h/2);
+        log("Uma Broca D'Água foi ativada. Consome Energia continuamente para gerar Água.", "good-event");
+        updateHUD();
+    });
+}
+
 btnRestart.addEventListener('click', init);
 
 // Realtime Loop Update
@@ -306,7 +381,7 @@ function updateSim(dt) {
         days++;
         
         // Growth logic
-        if (water > maxWater * 0.35 && food > maxFood * 0.35 && !isRationing) {
+        if (water >= (pop * 2) + 10 && food >= (pop * 2) + 10 && !isRationing) {
             let growth = Math.floor(Math.random() * 2) + 1;
             pop += growth;
             log(`Prosperidade na vila! Atraímos ${growth} novo(s) morador(es).`, 'good-event');
@@ -357,6 +432,19 @@ function updateSim(dt) {
     food -= foodDrainPerSec * dt;
     food += (dailyFoodGain / DAY_DURATION) * dt;
     
+    // ENERGY AND MACHINERY
+    energy += (solarPanels * 2) * dt;
+    let drillCost = drills * 1 * dt; // 1 energy per second per drill
+    let drillsActive = drills;
+    if (energy < drillCost) {
+        drillsActive = energy / (1 * dt);
+    }
+    energy -= drillsActive * 1 * dt;
+    water += drillsActive * 0.1 * dt; // 1 water per 10s per active drill
+    
+    // Limits Check
+    energy = Math.max(0, Math.min(energy, maxEnergy));
+
     if (weatherState === 'rain') {
         let rainGain = 20 / 5; // +20 spread over 5s
         water += rainGain * dt;
@@ -416,6 +504,7 @@ function updateSim(dt) {
             huntDuration = Math.max(4, huntDuration - 0.25);
             maxWater = Math.floor(maxWater * 1.1);
             maxFood = Math.floor(maxFood * 1.1);
+            schoolsBuilt++;
             let nx = w ? w.x : villageRect.x + villageRect.w/2;
             let ny = w ? w.y : villageRect.y + villageRect.h/2;
             buildings.push({ type: 'school', x: nx, y: ny });
@@ -566,6 +655,16 @@ function drawCanvas(dt) {
             // Flag
             ctx.fillStyle = '#f1c40f'; 
             ctx.fillRect(b.x-2, b.y-16, 4, 4);
+        } else if (b.type === 'solar') {
+            ctx.fillStyle = '#f39c12';
+            ctx.fillRect(b.x - 8, b.y - 4, 16, 8);
+            ctx.fillStyle = '#2c3e50';
+            ctx.fillRect(b.x - 6, b.y - 2, 12, 4);
+        } else if (b.type === 'drill') {
+            ctx.fillStyle = '#7f8c8d';
+            ctx.fillRect(b.x - 4, b.y - 10, 8, 10);
+            ctx.fillStyle = '#bdc3c7';
+            ctx.fillRect(b.x - 2, b.y - 12, 4, 4);
         }
     });
 

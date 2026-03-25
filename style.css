@@ -69,7 +69,7 @@ h1, h2, h3 {
 }
 
 .bar-container {
-    width: 120px;
+    width: 80px;
     height: 14px;
     background: #2a1b12;
     border-radius: 7px;
@@ -148,13 +148,38 @@ h1, h2, h3 {
     transition: background-color 2s ease;
 }
 
+#pause-overlay {
+    position: absolute;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(4px);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 20;
+    transition: opacity 0.3s;
+}
+
+#pause-overlay h2 {
+    font-size: 3rem;
+    color: #fff;
+    text-shadow: 0 4px 15px rgba(0,0,0,0.8);
+    letter-spacing: 4px;
+}
+
+#pause-overlay.hidden {
+    opacity: 0;
+    pointer-events: none;
+}
+
 /* Dashboard Panels */
 #dashboard {
     display: flex;
     flex-direction: column;
-    gap: 25px;
+    gap: 15px; /* Menor espaço para aproximar o log */
     flex: 1;
     max-width: 380px;
+    max-height: 540px; /* Mantém a altura igual à do Canvas */
 }
 
 .actions-panel, .log-panel {
@@ -173,8 +198,23 @@ h1, h2, h3 {
     font-size: 1.5rem;
     border-bottom: 1px solid #4a3020;
     padding-bottom: 8px;
-    margin-bottom: 4px;
+    margin-bottom: 0px; /* Removido para o gap atuar unicamente */
+    flex-shrink: 0;
 }
+
+.actions-scroll {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    overflow-y: auto;
+    max-height: 180px; /* Limita as ações exigindo scroll */
+    padding-right: 8px;
+}
+
+.actions-scroll::-webkit-scrollbar { width: 6px; }
+.actions-scroll::-webkit-scrollbar-track { background: rgba(0,0,0,0.2); border-radius: 3px; }
+.actions-scroll::-webkit-scrollbar-thumb { background: #5A4030; border-radius: 3px; }
+.actions-scroll::-webkit-scrollbar-thumb:hover { background: #8c5a3d; }
 
 /* Buttons */
 .action-btn {
@@ -192,6 +232,8 @@ h1, h2, h3 {
     position: relative;
     overflow: hidden;
     box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+    flex-shrink: 0; /* Impede que o botão diminua de tamanho devido ao painel com scroll */
+    min-height: 55px; /* Garante um tamanho mínimo saudável */
 }
 
 .action-btn:hover:not(:disabled) {
@@ -218,16 +260,42 @@ h1, h2, h3 {
 .info { background: linear-gradient(135deg, #2980b9, #2c3e50); }
 .hunter { background: linear-gradient(135deg, #27ae60, #1e8449); }
 .purple { background: linear-gradient(135deg, #8e44ad, #5b2c6f); }
+.solar { background: linear-gradient(135deg, #f1c40f, #e67e22); color: #222; }
+.drill { background: linear-gradient(135deg, #7f8c8d, #34495e); }
+
+.unlock-message {
+    text-align: center;
+    padding: 12px;
+    color: #f1c40f;
+    border-top: 2px dashed #4a3020;
+    margin-top: 10px;
+    font-family: 'Oswald', sans-serif;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    font-size: 0.95rem;
+}
+
+#advanced-actions-container {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+#advanced-actions-container.hidden, #unlock-msg.hidden,
+.energy-box.hidden, #btn-drill.hidden, #unlock-drill-msg.hidden {
+    display: none;
+}
 
 /* Event Log */
 .log-panel {
     flex-grow: 1;
+    overflow: hidden; /* Mantém o tamanho dentro do painel flex */
 }
 
 #event-log {
     list-style: none;
     overflow-y: auto;
-    max-height: 220px;
+    flex: 1; /* Cresce preenchendo o log-panel dinamicamente */
     display: flex;
     flex-direction: column;
     gap: 10px;
