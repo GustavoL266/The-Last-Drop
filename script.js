@@ -524,16 +524,49 @@ function drawCanvas(dt) {
     // Buildings
     buildings.forEach(b => {
         if (b.type === 'main-well' || b.type === 'well') {
-            // Foundation
-            ctx.fillStyle = '#333';
+            let isMain = b.type === 'main-well';
+            let radius = isMain ? 15 : 10;
+            
+            // Borda de pedra
+            ctx.fillStyle = '#7f8c8d';
             ctx.beginPath();
-            ctx.arc(b.x, b.y, b.type === 'main-well' ? 12 : 8, 0, Math.PI * 2);
+            ctx.arc(b.x, b.y, radius, 0, Math.PI * 2);
             ctx.fill();
-            // Water inside
-            ctx.fillStyle = 'var(--water-color)';
+            
+            // Pedrinhas detalhadas ao redor da borda
+            ctx.strokeStyle = '#2c3e50';
+            ctx.lineWidth = 1;
+            for(let i=0; i<8; i++) {
+                ctx.beginPath();
+                let angle = (i * Math.PI * 2) / 8 + (isMain ? 0 : 0.5);
+                let sx = b.x + Math.cos(angle) * (radius - 2.5);
+                let sy = b.y + Math.sin(angle) * (radius - 2.5);
+                ctx.arc(sx, sy, isMain ? 2.5 : 1.5, 0, Math.PI*2);
+                ctx.fillStyle = '#95a5a6';
+                ctx.fill();
+                ctx.stroke();
+            }
+
+            // Fundo escuro do buraco
+            ctx.fillStyle = '#111';
             ctx.beginPath();
-            ctx.arc(b.x, b.y, (b.type === 'main-well' ? 8 : 5) * (moisture + 0.1), 0, Math.PI * 2);
+            ctx.arc(b.x, b.y, radius - 4, 0, Math.PI * 2);
             ctx.fill();
+
+            // Água baseada no estoque
+            let waterRadius = (isMain ? 10 : 5) * (moisture + 0.1);
+            if (waterRadius > radius - 4) waterRadius = radius - 4;
+            
+            ctx.fillStyle = '#3498db';
+            ctx.beginPath();
+            ctx.arc(b.x, b.y, Math.max(0, waterRadius), 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Viga de madeira e balde
+            ctx.fillStyle = '#5c3a21';
+            ctx.fillRect(b.x - radius, b.y - 2, radius * 2, 4);
+            ctx.fillStyle = '#2c3e50';
+            ctx.fillRect(b.x - 2, b.y - 1.5, 4, 3);
         } else if (b.type === 'school') {
             ctx.fillStyle = '#8e44ad'; // Purple school
             ctx.fillRect(b.x - 8, b.y - 8, 16, 16);
