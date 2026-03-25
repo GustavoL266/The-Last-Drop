@@ -440,7 +440,7 @@ function updateSim(dt) {
         drillsActive = energy / (1 * dt);
     }
     energy -= drillsActive * 1 * dt;
-    water += drillsActive * 0.1 * dt; // 1 water per 10s per active drill
+    water += drillsActive * (1/3) * dt; // 1 water per 3s per active drill
     
     // Limits Check
     energy = Math.max(0, Math.min(energy, maxEnergy));
