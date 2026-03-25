@@ -200,11 +200,17 @@ function updateButtons() {
         btnSchool.innerText = `Construindo... (${Math.ceil(cooldowns.school)}s)`;
     } else {
         btnSchool.disabled = (water < 20);
-        btnSchool.innerText = `Construir Escola 🏫`;
+        btnSchool.innerText = `Construir Escola (${schoolsBuilt}) 🏫`;
     }
 
-    if (btnSolar) btnSolar.disabled = (food < 50 || water < 200);
-    if (btnDrill) btnDrill.disabled = (food < 50 || water < 50);
+    if (btnSolar) {
+        btnSolar.disabled = (food < 50 || water < 200);
+        btnSolar.innerText = `Painel Solar (${solarPanels}) ☀️`;
+    }
+    if (btnDrill) {
+        btnDrill.disabled = (food < 50 || water < 50);
+        btnDrill.innerText = `Broca D'Água (${drills}) 🪛`;
+    }
 
     // Hunt
     if (cooldowns.hunt > 0) {
