@@ -16,6 +16,7 @@ let lastTime = 0;
 const DAY_DURATION = 20; // seconds
 let dayTimer = DAY_DURATION;
 let isRationing = false;
+let isPaused = false;
 
 let cooldowns = {
     dig: 0,
@@ -33,6 +34,7 @@ const daysText = document.getElementById('days-text');
 const dayBarFill = document.getElementById('day-bar-fill');
 const eventLog = document.getElementById('event-log');
 
+const btnPause = document.getElementById('btn-pause');
 const btnRation = document.getElementById('btn-ration');
 const btnDig = document.getElementById('btn-dig');
 const btnHunt = document.getElementById('btn-hunt');
@@ -60,7 +62,8 @@ let weatherTimer = 0;
 // Init
 function init() {
     water = 100; maxWater = 100; food = 100; maxFood = 100; pop = 10; days = 1; huntDuration = 8; 
-    dayTimer = DAY_DURATION; isRationing = false;
+    dayTimer = DAY_DURATION; isRationing = false; isPaused = false;
+    if (btnPause) btnPause.innerText = "Pausar Jogo ⏸️";
     cooldowns = { dig: 0, school: 0, hunt: 0 };
     
     peopleDots.length = 0;
@@ -188,6 +191,19 @@ function endGame(reason) {
 }
 
 // User Actions
+if (btnPause) {
+    btnPause.addEventListener('click', () => {
+        isPaused = !isPaused;
+        if (isPaused) {
+            btnPause.innerText = "Retomar Jogo ▶️";
+            log("Jogo pausado.", "neutral-event");
+        } else {
+            btnPause.innerText = "Pausar Jogo ⏸️";
+            log("Jogo retomado.", "neutral-event");
+        }
+    });
+}
+
 btnRation.addEventListener('click', () => {
     isRationing = true;
     log(`Decreto ativado pro resto do dia! O estresse aumentou.`, 'warn-event');
@@ -268,6 +284,11 @@ function gameLoop(timestamp) {
     if (dt > 0.1) dt = 0.1;
 
     if(!gameOverModal.classList.contains('hidden')) {
+        requestAnimationFrame(gameLoop);
+        return;
+    }
+
+    if (isPaused) {
         requestAnimationFrame(gameLoop);
         return;
     }
