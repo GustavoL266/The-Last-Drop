@@ -289,7 +289,6 @@ function gameLoop(timestamp) {
     }
 
     if (isPaused) {
-        drawCanvas(0);
         requestAnimationFrame(gameLoop);
         return;
     }
@@ -649,20 +648,6 @@ function drawCanvas(dt) {
         ctx.fillText(ft.text, ft.x, ft.y);
         ctx.globalAlpha = 1.0; // reset
     });
-
-    if (isPaused) {
-        ctx.fillStyle = 'rgba(128, 128, 128, 0.6)';
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-        
-        ctx.font = 'bold 48px Oswald, sans-serif';
-        ctx.textAlign = 'center';
-        ctx.fillStyle = '#ffffff';
-        ctx.shadowColor = 'rgba(0, 0, 0, 0.8)';
-        ctx.shadowBlur = 10;
-        ctx.fillText("JOGO PAUSADO", canvas.width / 2, canvas.height / 2);
-        ctx.shadowColor = 'transparent'; // reset
-        ctx.shadowBlur = 0;
-    }
 }
 
 // Start
